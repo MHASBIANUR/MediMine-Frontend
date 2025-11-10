@@ -1,103 +1,220 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { registerUser, loginUser } from "@/lib/api";
+import AnimatedHeart3D from "@/components/AnimatedHeart3D";
+
+// === Toast Component ===
+function Toast({ message, type }: { message: string; type: "success" | "error" }) {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      transition={{ duration: 0.3 }}
+      className={`fixed top-6 right-6 px-4 py-3 rounded-lg shadow-lg text-white ${type === "success" ? "bg-green-500" : "bg-red-500"
+        }`}
+    >
+      {message}
+    </motion.div>
+  );
+}
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+export default function LandingPage() {
+  const router = useRouter();
+  const [mode, setMode] = useState<"none" | "register" | "login">("none");
+  const [form, setForm] = useState({ email: "", password: "", username: "" });
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleClick = (target: "register" | "login") => setMode(target);
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      await registerUser(form);
+      showToast("Registration successful! Please login.", "success");
+      setMode("login");
+      setForm({ email: "", password: "", username: "" });
+    } catch (err: any) {
+      showToast(err.response?.data?.error || "Registration failed. Please try again.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const data = await loginUser({ email: form.email, password: form.password });
+      const token = data.session?.access_token;
+      if (!token) throw new Error(data.error || "Token not found from server.");
+      localStorage.setItem("token", token);
+      showToast("Login successful!", "success");
+      router.push("/dashboard");
+    } catch (err: any) {
+      const msg = err?.response?.data?.error || err?.message;
+      showToast(msg.includes("email") || msg.includes("password") ? `Login failed: ${msg}` : "Login failed.", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="relative w-full min-h-screen bg-gradient-to-r from-cyan-600 via-blue-500 to-purple-500 overflow-hidden">
+      {toast && <Toast message={toast.message} type={toast.type} />}
+
+      <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-start justify-between px-6 md:px-12 py-20 gap-12">
+        {/* LEFT SECTION */}
+        <motion.div
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="flex-1 flex flex-col items-start gap-6"
+        >
+          <div className="flex flex-col gap-2">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white">
+              Welcome To
+            </h1>
+            <motion.div
+              className="flex items-center gap-2"
+              animate={{
+                scale: [1, 1.05, 1],
+                textShadow: [
+                  "0 0 0px rgba(255,255,255,0.8)",
+                  "0 0 18px rgba(255,100,150,1)",
+                  "0 0 0px rgba(255,255,255,0.8)",
+                ],
+              }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-pink-200 to-white">
+                MediMine 🧬
+              </h1>
+            </motion.div>
+          </div>
+
+          <p className="text-white/90 text-base md:text-lg max-w-md">
+            Your personal AI health companion. Explore your health data safely and easily.
+          </p>
+
+          <div className="flex flex-col md:flex-row gap-4 mt-4">
+            <button
+              onClick={() => handleClick("register")}
+              className="px-6 py-3 bg-white text-blue-600 font-bold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-transform"
+            >
+              Sign Up
+            </button>
+            <button
+              onClick={() => handleClick("login")}
+              className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 hover:shadow-xl transition-transform"
+            >
+              Sign In
+            </button>
+          </div>
+        </motion.div>
+
+        {/* RIGHT SECTION */}
+        <motion.div
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="flex-1 flex flex-col items-center gap-4 relative"
+        >
+          {/* AnimatedHeart3D dengan animasi saat register/login */}
+          <motion.div
+            animate={{
+              scale: mode === "none" ? 1 : 0.5,
+              rotateY: mode === "none" ? 0 : 180,
+            }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="w-72 h-72 md:w-96 md:h-96 flex items-center justify-center relative"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <AnimatedHeart3D />
+          </motion.div>
+
+
+          {/* About Section*/}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl p-2 max-w-[300px] text-justify shadow-sm mt-4"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            <h3 className="text-white text-[20px] font-semibold mb-1 text-center">About 🧬</h3>
+            <p className="text-white/80 text-[16px] leading-snug">
+              AI Health is a health assistant that helps you track your health, nutrition, and
+              healthy habits securely and easily.
+            </p>
+          </motion.div>
+
+
+
+          {/* Form register/login*/}
+          {mode !== "none" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="absolute top-0 left-1/2 transform -translate-x-1/2 w-full max-w-sm bg-white/30 backdrop-blur-md border border-white/40 rounded-2xl shadow-2xl p-8"
+            >
+              <button
+                onClick={() => setMode("none")}
+                className="absolute top-3 right-3 text-white font-bold text-lg"
+              >
+                ✕
+              </button>
+
+              {mode === "register" ? (
+                <>
+                  <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-6">
+                    Create Account ✨
+                  </h2>
+                  <form onSubmit={handleRegisterSubmit} className="flex flex-col gap-4">
+                    <input type="text" placeholder="Username" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
+                    <input type="email" placeholder="Email" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    <input type="password" placeholder="Password" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                    <button disabled={loading} className="bg-gradient-to-r from-cyan-400 to-blue-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
+                      {loading ? "Processing..." : "Register"}
+                    </button>
+                  </form>
+                  <p className="text-white text-sm text-center mt-4">
+                    Already have an account?{" "}
+                    <button onClick={() => setMode("login")} className="text-pink-500 font-semibold hover:underline">Login</button>
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl md:text-3xl font-bold text-center text-white mb-6">
+                    Welcome Back 👋
+                  </h2>
+                  <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
+                    <input type="email" placeholder="Email" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-400" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+                    <input type="password" placeholder="Password" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-400" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                    <button disabled={loading} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
+                      {loading ? "Processing..." : "Login"}
+                    </button>
+                  </form>
+                  <p className="text-white text-sm text-center mt-4">
+                    Don&apos;t have an account?{" "}
+                    <button onClick={() => setMode("register")} className="text-cyan-400 font-semibold hover:underline">Register</button>
+                  </p>
+                </>
+              )}
+            </motion.div>
+          )}
+        </motion.div>
+
+      </div>
     </div>
   );
 }
