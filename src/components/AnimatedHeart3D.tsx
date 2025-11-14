@@ -23,15 +23,15 @@ function HospitalModel() {
     <primitive
       ref={group}
       object={scene}
-      scale={0.6} // 🔹 Ukuran model — ubah 0.4–1.0 biar pas
-      position={[0, -55.0, 0]} // 🔹 Turunkan posisi biar lantainya pas
+      scale={0.6}
+      position={[0, -55.0, 0]}
     />
   );
 }
 
 export default function AnimatedHeart3D() {
   return (
-    <div className="w-full h-[25rem] md:h-[28rem] flex items-center justify-center">
+    <div className="w-full h-100 md:h-112 flex items-center justify-center">
       <Canvas camera={{ position: [10, 10, 135], fov: 50 }}>
         <ambientLight intensity={1.2} />
         <directionalLight position={[5, 8, 5]} intensity={1.5} />
