@@ -70,7 +70,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="relative w-full min-h-screen bg-gradient-to-r from-cyan-600 via-blue-500 to-purple-500 overflow-hidden">
+    <div className="relative w-full min-h-screen bg-linear-to-r from-cyan-600 via-blue-500 to-purple-500 overflow-hidden">
       {toast && <Toast message={toast.message} type={toast.type} />}
 
       <div className="max-w-7xl mx-auto flex flex-col-reverse md:flex-row items-start justify-between px-6 md:px-12 py-20 gap-12">
@@ -97,7 +97,7 @@ export default function LandingPage() {
               }}
               transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-pink-200 to-white">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-white via-pink-200 to-white">
                 MediMine 🧬
               </h1>
             </motion.div>
@@ -183,7 +183,7 @@ export default function LandingPage() {
                     <input type="text" placeholder="Username" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
                     <input type="email" placeholder="Email" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                     <input type="password" placeholder="Password" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-cyan-400" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-                    <button disabled={loading} className="bg-gradient-to-r from-cyan-400 to-blue-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
+                    <button disabled={loading} className="bg-linear-to-r from-cyan-400 to-blue-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
                       {loading ? "Processing..." : "Register"}
                     </button>
                   </form>
@@ -200,7 +200,7 @@ export default function LandingPage() {
                   <form onSubmit={handleLoginSubmit} className="flex flex-col gap-4">
                     <input type="email" placeholder="Email" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-400" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
                     <input type="password" placeholder="Password" className="p-2 rounded-lg bg-white/80 text-gray-800 placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-pink-400" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-                    <button disabled={loading} className="bg-gradient-to-r from-pink-500 to-purple-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
+                    <button disabled={loading} className="bg-linear-to-r from-pink-500 to-purple-600 text-white py-2 rounded-lg font-semibold shadow-md hover:scale-[1.02] hover:shadow-lg transition-all">
                       {loading ? "Processing..." : "Login"}
                     </button>
                   </form>
